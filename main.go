@@ -53,7 +53,7 @@ func run() error {
 		return fmt.Errorf("Could not draw title: %v", err)
 	}
 
-	time.Sleep(5 * time.Second)
+	time.Sleep(1 * time.Second)
 
 	s, err := newScene(ren)
 	if err != nil {
