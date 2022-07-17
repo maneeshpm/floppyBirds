@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"time"
 
 	"github.com/veandco/go-sdl2/img"
 	"github.com/veandco/go-sdl2/sdl"
@@ -52,6 +54,26 @@ func (s *scene) paint(ren *sdl.Renderer) error {
 
 	ren.Present()
 	return nil
+}
+
+func (s *scene) run(ren *sdl.Renderer, ctx context.Context) <-chan error {
+	errc := make(chan error)
+
+	go func() {
+		defer close(errc)
+		for range time.Tick(50 * time.Millisecond) {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				if err := s.paint(ren); err != nil {
+					errc <- err
+				}
+			}
+		}
+	}()
+
+	return errc
 }
 
 func (s *scene) Destroy() {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"time"
@@ -61,12 +62,16 @@ func run() error {
 	}
 	defer s.Destroy()
 
-	if err := s.paint(ren); err != nil {
-		return fmt.Errorf("Could not paint the scene: %v", err)
-	}
+	// quit := make(chan struct{})
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	time.Sleep(5 * time.Second)
-	return nil
+	select {
+	case err := <-s.run(ren, ctx):
+		return err
+	case <-time.After(5 * time.Second):
+		return nil
+	}
 }
 
 // Draw a test title
