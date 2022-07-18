@@ -9,14 +9,9 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-const (
-	framePath = "res/imgs/frame-%d.png"
-)
-
 type scene struct {
-	iter  int
-	bg    *sdl.Texture
-	birds []*sdl.Texture
+	bg   *sdl.Texture
+	bird *bird
 }
 
 func newScene(ren *sdl.Renderer) (*scene, error) {
@@ -25,31 +20,23 @@ func newScene(ren *sdl.Renderer) (*scene, error) {
 		return nil, fmt.Errorf("Could not create background texture: %v", err)
 	}
 
-	var birds []*sdl.Texture
-	for i := 1; i <= 4; i++ {
-		bird, err := img.LoadTexture(ren, fmt.Sprintf(framePath, i))
-		if err != nil {
-			return nil, fmt.Errorf("Could not could not load frame: %v", err)
-		}
-		birds = append(birds, bird)
+	bird, err := newBird(ren)
+	if err != nil {
+		return nil, fmt.Errorf("Could not create bird: %v", err)
 	}
 
-	return &scene{bg: bg, birds: birds}, nil
+	return &scene{bg: bg, bird: bird}, nil
 }
 
 func (s *scene) paint(ren *sdl.Renderer) error {
 	ren.Clear()
-	s.iter++
 
 	if err := ren.Copy(s.bg, nil, nil); err != nil {
 		return fmt.Errorf("Could not copy texture: %v", err)
 	}
 
-	rect := &sdl.Rect{W: 100, H: 86, X: 10, Y: winHeight/2 - 43/2}
-
-	frameSelector := s.iter / 10 % len(s.birds)
-	if err := ren.Copy(s.birds[frameSelector], nil, rect); err != nil {
-		return fmt.Errorf("Could not copy texture: %v", err)
+	if err := s.bird.paint(ren); err != nil {
+		return fmt.Errorf("Could not paint biard: %v", err)
 	}
 
 	ren.Present()
@@ -78,8 +65,5 @@ func (s *scene) run(ren *sdl.Renderer, ctx context.Context) <-chan error {
 
 func (s *scene) Destroy() {
 	s.bg.Destroy()
-
-	for _, bird := range s.birds {
-		bird.Destroy()
-	}
+	s.bird.destroy()
 }
