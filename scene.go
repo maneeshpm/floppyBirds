@@ -40,7 +40,6 @@ func newScene(ren *sdl.Renderer) (*scene, error) {
 func (s *scene) paint(ren *sdl.Renderer) error {
 	ren.Clear()
 	s.iter++
-	s.iter %= len(s.birds)
 
 	if err := ren.Copy(s.bg, nil, nil); err != nil {
 		return fmt.Errorf("Could not copy texture: %v", err)
@@ -48,7 +47,8 @@ func (s *scene) paint(ren *sdl.Renderer) error {
 
 	rect := &sdl.Rect{W: 100, H: 86, X: 10, Y: winHeight/2 - 43/2}
 
-	if err := ren.Copy(s.birds[s.iter], nil, rect); err != nil {
+	frameSelector := s.iter / 10 % len(s.birds)
+	if err := ren.Copy(s.birds[frameSelector], nil, rect); err != nil {
 		return fmt.Errorf("Could not copy texture: %v", err)
 	}
 
@@ -61,7 +61,7 @@ func (s *scene) run(ren *sdl.Renderer, ctx context.Context) <-chan error {
 
 	go func() {
 		defer close(errc)
-		for range time.Tick(50 * time.Millisecond) {
+		for range time.Tick(10 * time.Millisecond) {
 			select {
 			case <-ctx.Done():
 				return

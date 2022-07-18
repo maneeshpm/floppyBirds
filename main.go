@@ -64,14 +64,9 @@ func run() error {
 
 	// quit := make(chan struct{})
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
-	select {
-	case err := <-s.run(ren, ctx):
-		return err
-	case <-time.After(5 * time.Second):
-		return nil
-	}
+	time.AfterFunc(5*time.Second, cancel)
+	return <-s.run(ren, ctx)
 }
 
 // Draw a test title
