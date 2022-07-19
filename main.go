@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"time"
@@ -63,10 +62,18 @@ func run() error {
 	defer s.Destroy()
 
 	// quit := make(chan struct{})
-	ctx, cancel := context.WithCancel(context.Background())
 
-	time.AfterFunc(5*time.Second, cancel)
-	return <-s.run(ren, ctx)
+	events := make(chan sdl.Event)
+	errc := s.run(ren, events)
+
+	for {
+		select {
+		case err := <-errc:
+			return err
+		case events <- sdl.WaitEvent():
+		}
+	}
+
 }
 
 // Draw a test title

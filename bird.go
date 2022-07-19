@@ -9,7 +9,8 @@ import (
 
 const (
 	framePath = "res/imgs/frame-%d.png"
-	gravity   = 0.048
+	gravity   = 0.2
+	jumpSpeed = 8
 )
 
 type bird struct {
@@ -46,13 +47,17 @@ func (bird *bird) paint(ren *sdl.Renderer) error {
 	}
 
 	bird.x += bird.xspeed
-	frameSelector := bird.iter / 15 % len(bird.textures)
+	frameSelector := bird.iter / 10 % len(bird.textures)
 
 	if err := ren.Copy(bird.textures[frameSelector], nil, rect); err != nil {
 		return fmt.Errorf("Could not copy texture: %v", err)
 	}
 
 	return nil
+}
+
+func (bird *bird) jump() {
+	bird.yspeed = -jumpSpeed
 }
 
 func (bird *bird) destroy() {

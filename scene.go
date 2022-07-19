@@ -1,8 +1,8 @@
 package main
 
 import (
-	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/veandco/go-sdl2/img"
@@ -43,16 +43,35 @@ func (s *scene) paint(ren *sdl.Renderer) error {
 	return nil
 }
 
-func (s *scene) run(ren *sdl.Renderer, ctx context.Context) <-chan error {
+func (s *scene) handleEvent(event sdl.Event) bool {
+	switch event.(type) {
+	case *sdl.QuitEvent:
+		return true
+
+	case *sdl.MouseButtonEvent:
+		s.bird.jump()
+
+	case *sdl.MouseMotionEvent, *sdl.WindowEvent, *sdl.CommonEvent, *sdl.AudioDeviceEvent:
+
+	default:
+		log.Printf("Event type: %T", event)
+	}
+
+	return false
+}
+
+func (s *scene) run(ren *sdl.Renderer, events <-chan sdl.Event) <-chan error {
 	errc := make(chan error)
 
 	go func() {
 		defer close(errc)
-		for range time.Tick(10 * time.Millisecond) {
+		tick := time.Tick(10 * time.Millisecond)
+		done := false
+		for !done {
 			select {
-			case <-ctx.Done():
-				return
-			default:
+			case event := <-events:
+				done = s.handleEvent(event)
+			case <-tick:
 				if err := s.paint(ren); err != nil {
 					errc <- err
 				}
