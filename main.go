@@ -19,7 +19,7 @@ const (
 
 	bgPath = "res/imgs/background.png"
 
-	flappyName = "flappy shukle"
+	flappyName = "flappy shawtty"
 )
 
 func main() {
