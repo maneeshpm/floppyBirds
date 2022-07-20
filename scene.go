@@ -32,6 +32,10 @@ func (s *scene) update() {
 	s.bird.update()
 }
 
+func (s *scene) reset() {
+	s.bird.reset()
+}
+
 func (s *scene) paint(ren *sdl.Renderer) error {
 	ren.Clear()
 
@@ -77,6 +81,11 @@ func (s *scene) run(ren *sdl.Renderer, events <-chan sdl.Event) <-chan error {
 				done = s.handleEvent(event)
 			case <-tick:
 				s.update()
+				if s.bird.isDead() {
+					drawText(ren, "LMAO ded")
+					time.Sleep(2 * time.Second)
+					s.reset()
+				}
 				if err := s.paint(ren); err != nil {
 					errc <- err
 				}
