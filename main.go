@@ -107,7 +107,9 @@ func drawText(ren *sdl.Renderer, text string) error {
 	}
 	defer t.Destroy()
 
-	if err := ren.Copy(t, nil, nil); err != nil {
+	rect := &sdl.Rect{W: 1200, H: 700, X: 200, Y: 100}
+
+	if err := ren.Copy(t, nil, rect); err != nil {
 		return fmt.Errorf("Could not copy texture: %v", err)
 	}
 
