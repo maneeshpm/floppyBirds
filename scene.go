@@ -28,6 +28,10 @@ func newScene(ren *sdl.Renderer) (*scene, error) {
 	return &scene{bg: bg, bird: bird}, nil
 }
 
+func (s *scene) update() {
+	s.bird.update()
+}
+
 func (s *scene) paint(ren *sdl.Renderer) error {
 	ren.Clear()
 
@@ -72,6 +76,7 @@ func (s *scene) run(ren *sdl.Renderer, events <-chan sdl.Event) <-chan error {
 			case event := <-events:
 				done = s.handleEvent(event)
 			case <-tick:
+				s.update()
 				if err := s.paint(ren); err != nil {
 					errc <- err
 				}
