@@ -49,7 +49,7 @@ func run() error {
 	}
 	defer win.Destroy()
 
-	if err := drawTitle(ren); err != nil {
+	if err := drawText(ren, flappyName); err != nil {
 		return fmt.Errorf("Could not draw title: %v", err)
 	}
 
@@ -76,8 +76,8 @@ func run() error {
 
 }
 
-// Draw a test title
-func drawTitle(ren *sdl.Renderer) error {
+// Write a spanning string on the window
+func drawText(ren *sdl.Renderer, text string) error {
 	ren.Clear()
 	font, err := ttf.OpenFont(fontPath, fontSize)
 
@@ -94,7 +94,7 @@ func drawTitle(ren *sdl.Renderer) error {
 	}
 
 	fmt.Println("works 1")
-	surface, err := font.RenderUTF8Solid(flappyName, c)
+	surface, err := font.RenderUTF8Solid(text, c)
 	if err != nil {
 		return fmt.Errorf("Could not render text: %v", err)
 	}
