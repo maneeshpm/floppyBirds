@@ -7,6 +7,7 @@ import (
 
 	"github.com/veandco/go-sdl2/img"
 	"github.com/veandco/go-sdl2/sdl"
+	"github.com/veandco/go-sdl2/ttf"
 )
 
 type scene struct {
@@ -39,6 +40,55 @@ func newScene(ren *sdl.Renderer) (*scene, error) {
 	}
 
 	return &scene{bg: bg, bird: bird, pipes: pipes, card: card}, nil
+}
+
+func drawEnd(ren *sdl.Renderer, score int) error {
+	ren.Clear()
+	font, err := ttf.OpenFont(fontPath, fontSize)
+
+	if err != nil {
+		return fmt.Errorf("Could not open font: %v", err)
+	}
+	defer font.Close()
+
+	c1 := sdl.Color{R: 0, G: 200, B: 225, A: 0}
+	c2 := sdl.Color{R: 50, G: 160, B: 80, A: 0}
+
+	surface1, err := font.RenderUTF8Solid("LMAO ded", c1)
+	if err != nil {
+		return fmt.Errorf("Could not render text: %v", err)
+	}
+	defer surface1.Free()
+
+	surface2, err := font.RenderUTF8Solid(fmt.Sprintf("Shawtty sold at %d crore", score), c2)
+	if err != nil {
+		return fmt.Errorf("Could not render text: %v", err)
+	}
+	defer surface2.Free()
+
+	t1, err := ren.CreateTextureFromSurface(surface1)
+	if err != nil {
+		return fmt.Errorf("Could not create texture: %v", err)
+	}
+	t2, err := ren.CreateTextureFromSurface(surface2)
+	if err != nil {
+		return fmt.Errorf("Could not create texture: %v", err)
+	}
+	defer t1.Destroy()
+	defer t2.Destroy()
+
+	rect1 := &sdl.Rect{W: 1000, H: 500, X: 300, Y: 100}
+	if err := ren.Copy(t1, nil, rect1); err != nil {
+		return fmt.Errorf("Could not copy texture: %v", err)
+	}
+
+	rect2 := &sdl.Rect{W: 800, H: 200, X: 400, Y: 700}
+	if err := ren.Copy(t2, nil, rect2); err != nil {
+		return fmt.Errorf("Could not copy texture: %v", err)
+	}
+
+	ren.Present()
+	return nil
 }
 
 func (s *scene) update() {
@@ -106,8 +156,8 @@ func (s *scene) run(ren *sdl.Renderer, events <-chan sdl.Event) <-chan error {
 			case <-tick:
 				s.update()
 				if s.bird.isDead() {
-					drawText(ren, "LMAO ded")
-					time.Sleep(2 * time.Second)
+					drawEnd(ren, s.card.score)
+					time.Sleep(3 * time.Second)
 					s.reset()
 				}
 				if err := s.paint(ren); err != nil {
