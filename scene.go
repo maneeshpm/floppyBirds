@@ -10,8 +10,11 @@ import (
 )
 
 type scene struct {
-	bg   *sdl.Texture
-	bird *bird
+	bg *sdl.Texture
+
+	bird  *bird
+	pipes *pipes
+	card  *card
 }
 
 func newScene(ren *sdl.Renderer) (*scene, error) {
@@ -25,15 +28,30 @@ func newScene(ren *sdl.Renderer) (*scene, error) {
 		return nil, fmt.Errorf("Could not create bird: %v", err)
 	}
 
-	return &scene{bg: bg, bird: bird}, nil
+	pipes, err := newPipes(ren)
+	if err != nil {
+		return nil, fmt.Errorf("Could not create pipe: %v", err)
+	}
+
+	card, err := newCard(ren)
+	if err != nil {
+		return nil, fmt.Errorf("Could not create card: %v", err)
+	}
+
+	return &scene{bg: bg, bird: bird, pipes: pipes, card: card}, nil
 }
 
 func (s *scene) update() {
 	s.bird.update()
+	s.pipes.update(s.card)
+
+	s.pipes.check(s.bird)
 }
 
 func (s *scene) reset() {
 	s.bird.reset()
+	s.pipes.reset()
+	s.card.reset()
 }
 
 func (s *scene) paint(ren *sdl.Renderer) error {
@@ -44,7 +62,13 @@ func (s *scene) paint(ren *sdl.Renderer) error {
 	}
 
 	if err := s.bird.paint(ren); err != nil {
-		return fmt.Errorf("Could not paint biard: %v", err)
+		return fmt.Errorf("Could not paint bird: %v", err)
+	}
+	if err := s.pipes.paint(ren); err != nil {
+		return fmt.Errorf("Could not paint pipe: %v", err)
+	}
+	if err := s.card.paint(ren); err != nil {
+		return fmt.Errorf("Could not paint pipe: %v", err)
 	}
 
 	ren.Present()
@@ -99,4 +123,6 @@ func (s *scene) run(ren *sdl.Renderer, events <-chan sdl.Event) <-chan error {
 func (s *scene) Destroy() {
 	s.bg.Destroy()
 	s.bird.destroy()
+	s.pipes.destroy()
+	s.card.destroy()
 }
