@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"time"
@@ -19,7 +18,7 @@ const (
 
 	bgPath = "res/imgs/background.png"
 
-	flappyName = "flappy shukle"
+	flappyName = "flappy shawtty"
 )
 
 func main() {
@@ -50,7 +49,7 @@ func run() error {
 	}
 	defer win.Destroy()
 
-	if err := drawTitle(ren); err != nil {
+	if err := drawText(ren, flappyName); err != nil {
 		return fmt.Errorf("Could not draw title: %v", err)
 	}
 
@@ -63,14 +62,22 @@ func run() error {
 	defer s.Destroy()
 
 	// quit := make(chan struct{})
-	ctx, cancel := context.WithCancel(context.Background())
 
-	time.AfterFunc(5*time.Second, cancel)
-	return <-s.run(ren, ctx)
+	events := make(chan sdl.Event)
+	errc := s.run(ren, events)
+
+	for {
+		select {
+		case err := <-errc:
+			return err
+		case events <- sdl.WaitEvent():
+		}
+	}
+
 }
 
-// Draw a test title
-func drawTitle(ren *sdl.Renderer) error {
+// Write a spanning string on the window
+func drawText(ren *sdl.Renderer, text string) error {
 	ren.Clear()
 	font, err := ttf.OpenFont(fontPath, fontSize)
 
@@ -79,15 +86,9 @@ func drawTitle(ren *sdl.Renderer) error {
 	}
 	defer font.Close()
 
-	c := sdl.Color{
-		R: 0,
-		G: 200,
-		B: 225,
-		A: 0,
-	}
-
+	c := sdl.Color{R: 0, G: 200, B: 225, A: 0}
 	fmt.Println("works 1")
-	surface, err := font.RenderUTF8Solid(flappyName, c)
+	surface, err := font.RenderUTF8Solid(text, c)
 	if err != nil {
 		return fmt.Errorf("Could not render text: %v", err)
 	}
@@ -100,7 +101,8 @@ func drawTitle(ren *sdl.Renderer) error {
 	}
 	defer t.Destroy()
 
-	if err := ren.Copy(t, nil, nil); err != nil {
+	rect := &sdl.Rect{W: 1200, H: 700, X: 200, Y: 100}
+	if err := ren.Copy(t, nil, rect); err != nil {
 		return fmt.Errorf("Could not copy texture: %v", err)
 	}
 
