@@ -86,13 +86,7 @@ func drawText(ren *sdl.Renderer, text string) error {
 	}
 	defer font.Close()
 
-	c := sdl.Color{
-		R: 0,
-		G: 200,
-		B: 225,
-		A: 0,
-	}
-
+	c := sdl.Color{R: 0, G: 200, B: 225, A: 0}
 	fmt.Println("works 1")
 	surface, err := font.RenderUTF8Solid(text, c)
 	if err != nil {
@@ -108,7 +102,6 @@ func drawText(ren *sdl.Renderer, text string) error {
 	defer t.Destroy()
 
 	rect := &sdl.Rect{W: 1200, H: 700, X: 200, Y: 100}
-
 	if err := ren.Copy(t, nil, rect); err != nil {
 		return fmt.Errorf("Could not copy texture: %v", err)
 	}
